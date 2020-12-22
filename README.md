@@ -7,7 +7,11 @@ The utility supports only *custom-defined* database tables, but not SAP-delivere
 
 You can specify one or more database tables for the **download**. A search-as-you-type feature is supported for the first table name. The xml format is used as file format for the download. The created files are only intended and optimized for the upload by the same utility. It is not posible to process the data with other tools. 
 
+![](png/download.png)
+
 When **upload** the data, you can specify whether the data should be *appended* only or whether the data in all tables to be uploaded should be deleted before the upload - which means to be *replaced*.
+
+![](png/upload.png)
 
 Please grant the authorizations for the utility carefully. Only the start authorization of the http services is checked. There is no further authorization check on table level. This utility is intended to be used by adminstators or key users only.
 
