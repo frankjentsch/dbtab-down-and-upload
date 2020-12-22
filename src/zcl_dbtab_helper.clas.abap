@@ -315,7 +315,7 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
     TRY.
         DATA lv_dbtab_xml TYPE xstring.
 
-        "serialize table data to xml of json
+        "serialize table data to xml or json
         IF 1 = 2.
           "xml
           CALL TRANSFORMATION id
