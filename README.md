@@ -1,5 +1,5 @@
-# Download and Upload of Table Data for SAP Cloud Platform ABAP Environment
-This Git repository provides an utility to download and upload table data from one <em>SAP Cloud Platform ABAP Environment</em> system to another. 
+# Download and Upload of Table Data for SAP BTP ABAP Environment
+This Git repository provides an utility to download and upload table data from one [SAP BTP ABAP Environment](https://community.sap.com/topics/btp-abap-environment) system to another. The code is compliant to [ABAP Cloud](https://community.sap.com/topics/abap) and can also be used in S/4HANA Public Cloud systems.
 
 The utility consists of two http services (URLs), one to **download** data and the other one to **upload** data. A *SAP UI5* web page is provided for both features.
 
@@ -17,9 +17,9 @@ Please grant the authorizations for the utility carefully. Only the start author
 
 ## Prerequisites
 Make sure to fulfill the following requirements:
-* You have access to an SAP Cloud Platform ABAP Environment instance (see [here](https://blogs.sap.com/2018/09/04/sap-cloud-platform-abap-environment) for additional information).
+* You have access to an SAP BTP ABAP Environment instance (see [here](https://blogs.sap.com/2018/09/04/sap-cloud-platform-abap-environment) for additional information).
 * You have downloaded and installed ABAP Development Tools (ADT). Make sure to use the most recent version as indicated on the [installation page](https://tools.hana.ondemand.com/#abap). 
-* You have created an ABAP Cloud Project in ADT that allows you to access your SAP Cloud Platform ABAP Environment instance (see [here](https://help.sap.com/viewer/5371047f1273405bb46725a417f95433/Cloud/en-US/99cc54393e4c4e77a5b7f05567d4d14c.html) for additional information). Your log-on language is English.
+* You have created an ABAP Cloud Project in ADT that allows you to access your SAP BTP ABAP Environment instance (see [here](https://help.sap.com/viewer/5371047f1273405bb46725a417f95433/Cloud/en-US/99cc54393e4c4e77a5b7f05567d4d14c.html) for additional information). Your log-on language is English.
 * You have installed the [abapGit](https://github.com/abapGit/eclipse.abapgit.org) plug-in for ADT from the update site `http://eclipse.abapgit.org/updatesite/`.
 
 ## Download
