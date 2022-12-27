@@ -15,56 +15,9 @@ CLASS zcl_dbtab_upload DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_dbtab_upload IMPLEMENTATION.
 
-  METHOD if_http_service_extension~handle_request.
+CLASS ZCL_DBTAB_UPLOAD IMPLEMENTATION.
 
-    CASE request->get_method(  ).
-
-      WHEN CONV string( if_web_http_client=>get ).
-        "return static html for web page
-        response->set_text( get_html( ) ).
-
-      WHEN CONV string( if_web_http_client=>post ).
-        DATA lv_override TYPE abap_bool.
-        CASE request->get_form_field( `filetoupload-data` ).
-          WHEN '0'.
-            lv_override = abap_false.
-          WHEN '1'.
-            lv_override = abap_true.
-          WHEN OTHERS.
-            response->set_text( CONV #( 'Invalid upload operation'(006) ) ).
-            response->set_status( 404 ).
-            RETURN.
-        ENDCASE.
-
-        DO request->num_multiparts( ) TIMES.
-          DATA(lo_part_request) = request->get_multipart( index = sy-index ).
-          IF lo_part_request IS BOUND.
-            DATA(lv_xml) = lo_part_request->get_binary( ).
-            IF lv_xml IS NOT INITIAL.
-              NEW zcl_dbtab_helper( )->upload_file_content(
-                EXPORTING
-                  iv_xml            = lv_xml
-                  iv_overwrite      = lv_override
-                IMPORTING
-                  ev_error_occurred = DATA(lv_error_occurred)
-                  ev_error_message  = DATA(lv_error_message)
-              ).
-              IF lv_error_occurred = abap_false.
-                response->set_text( CONV #( 'Data has been successfully inserted'(007) ) ).
-              ELSE.
-                response->set_text( lv_error_message ).
-                response->set_status( 404 ).
-              ENDIF.
-              EXIT.
-            ENDIF.
-          ENDIF.
-        ENDDO.
-
-    ENDCASE.
-
-  ENDMETHOD.
 
   METHOD get_html.
 
@@ -172,8 +125,58 @@ CLASS zcl_dbtab_upload IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD if_http_service_extension~handle_request.
+
+    CASE request->get_method(  ).
+
+      WHEN CONV string( if_web_http_client=>get ).
+        "return static html for web page
+        response->set_text( get_html( ) ).
+
+      WHEN CONV string( if_web_http_client=>post ).
+        DATA lv_override TYPE abap_bool.
+        CASE request->get_form_field( `filetoupload-data` ).
+          WHEN '0'.
+            lv_override = abap_false.
+          WHEN '1'.
+            lv_override = abap_true.
+          WHEN OTHERS.
+            response->set_text( CONV #( 'Invalid upload operation'(006) ) ).
+            response->set_status( 404 ).
+            RETURN.
+        ENDCASE.
+
+        DO request->num_multiparts( ) TIMES.
+          DATA(lo_part_request) = request->get_multipart( index = sy-index ).
+          IF lo_part_request IS BOUND.
+            DATA(lv_xml) = lo_part_request->get_binary( ).
+            IF lv_xml IS NOT INITIAL.
+              NEW zcl_dbtab_helper( )->upload_file_content(
+                EXPORTING
+                  iv_xml            = lv_xml
+                  iv_overwrite      = lv_override
+                IMPORTING
+                  ev_error_occurred = DATA(lv_error_occurred)
+                  ev_error_message  = DATA(lv_error_message)
+              ).
+              IF lv_error_occurred = abap_false.
+                response->set_text( CONV #( 'Data has been successfully inserted'(007) ) ).
+              ELSE.
+                response->set_text( lv_error_message ).
+                response->set_status( 404 ).
+              ENDIF.
+              EXIT.
+            ENDIF.
+          ENDIF.
+        ENDDO.
+
+    ENDCASE.
+
+  ENDMETHOD.
+
+
   METHOD if_oo_adt_classrun~main.
     out->write( get_html( ) ).
   ENDMETHOD.
-
 ENDCLASS.

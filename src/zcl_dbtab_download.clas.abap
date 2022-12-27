@@ -20,87 +20,9 @@ CLASS zcl_dbtab_download DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_dbtab_download IMPLEMENTATION.
 
-  METHOD if_http_service_extension~handle_request.
+CLASS ZCL_DBTAB_DOWNLOAD IMPLEMENTATION.
 
-    CASE request->get_method(  ).
-
-      WHEN CONV string( if_web_http_client=>get ).
-        DATA(lv_table_name_suggestion) = to_upper( request->get_form_field( co_url_parameter-table_name_suggestion ) ).
-        DATA(lv_download_tables) = to_upper( request->get_form_field( co_url_parameter-download_tables ) ).
-
-        IF lv_table_name_suggestion IS NOT INITIAL.
-          "return search-as-you-type results
-          response->set_text( NEW zcl_dbtab_helper( )->search_table_name_json_output( lv_table_name_suggestion ) ).
-
-        ELSEIF lv_download_tables IS NOT INITIAL.
-          "convert table names string
-          NEW zcl_dbtab_helper( )->check_tables_visibility(
-            EXPORTING
-              iv_table_names    = lv_download_tables
-            IMPORTING
-              et_table_name     = DATA(lt_table_name)
-              ev_error_occurred = DATA(lv_error_occurred)
-              ev_error_message  = DATA(lv_error_message)
-          ).
-          IF lv_error_occurred = abap_true.
-            response->set_text( lv_error_message ).
-            response->set_status( 404 ).
-          ELSE.
-            "return file content
-            NEW zcl_dbtab_helper( )->download_file_content(
-              EXPORTING
-                it_table_name     = lt_table_name
-              IMPORTING
-                ev_xml            = DATA(lv_xml)
-                ev_error_occurred = lv_error_occurred
-                ev_error_message  = lv_error_message
-            ).
-            IF lv_error_occurred = abap_false.
-              DATA lv_table_name_descr TYPE string.
-              READ TABLE lt_table_name INDEX 1 INTO lv_table_name_descr.
-              IF lines( lt_table_name ) > 1.
-                lv_table_name_descr = lv_table_name_descr && |_and_{ lines( lt_table_name ) - 1 }_more|.
-              ENDIF.
-
-              response->set_binary( lv_xml ).
-              response->set_header_fields( VALUE #(
-                ( name  = `content-type`        value = |application/json| )
-                ( name  = `content-disposition` value = |attachment;filename="{ lv_table_name_descr }_{ sy-sysid }_{ cl_abap_context_info=>get_system_date( ) }_{ cl_abap_context_info=>get_system_time( ) }.xml"| )
-              ) ) ##no_text.
-            ELSE.
-              response->set_text( lv_error_message ).
-              response->set_status( 404 ).
-            ENDIF.
-          ENDIF.
-
-        ELSE.
-          "return static html for web page
-          response->set_text( get_html( ) ).
-
-        ENDIF.
-
-      WHEN CONV string( if_web_http_client=>post ).
-        DATA(lv_check_tables) = to_upper( request->get_form_field( co_url_parameter-check_tables ) ).
-        IF lv_check_tables IS NOT INITIAL.
-          "check visibility of database table
-          NEW zcl_dbtab_helper( )->check_tables_visibility(
-            EXPORTING
-              iv_table_names    = lv_check_tables
-            IMPORTING
-              ev_error_occurred = lv_error_occurred
-              ev_error_message  = lv_error_message
-          ).
-          IF lv_error_occurred = abap_true.
-            response->set_text( lv_error_message ).
-            response->set_status( 404 ).
-          ENDIF.
-        ENDIF.
-
-    ENDCASE.
-
-  ENDMETHOD.
 
   METHOD get_html.
 
@@ -203,8 +125,89 @@ CLASS zcl_dbtab_download IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD if_http_service_extension~handle_request.
+
+    CASE request->get_method(  ).
+
+      WHEN CONV string( if_web_http_client=>get ).
+        DATA(lv_table_name_suggestion) = to_upper( request->get_form_field( co_url_parameter-table_name_suggestion ) ).
+        DATA(lv_download_tables) = to_upper( request->get_form_field( co_url_parameter-download_tables ) ).
+
+        IF lv_table_name_suggestion IS NOT INITIAL.
+          "return search-as-you-type results
+          response->set_text( NEW zcl_dbtab_helper( )->search_table_name_json_output( lv_table_name_suggestion ) ).
+
+        ELSEIF lv_download_tables IS NOT INITIAL.
+          "convert table names string
+          NEW zcl_dbtab_helper( )->check_tables_visibility(
+            EXPORTING
+              iv_table_names    = lv_download_tables
+            IMPORTING
+              et_table_name     = DATA(lt_table_name)
+              ev_error_occurred = DATA(lv_error_occurred)
+              ev_error_message  = DATA(lv_error_message)
+          ).
+          IF lv_error_occurred = abap_true.
+            response->set_text( lv_error_message ).
+            response->set_status( 404 ).
+          ELSE.
+            "return file content
+            NEW zcl_dbtab_helper( )->download_file_content(
+              EXPORTING
+                it_table_name     = lt_table_name
+              IMPORTING
+                ev_xml            = DATA(lv_xml)
+                ev_error_occurred = lv_error_occurred
+                ev_error_message  = lv_error_message
+            ).
+            IF lv_error_occurred = abap_false.
+              DATA lv_table_name_descr TYPE string.
+              READ TABLE lt_table_name INDEX 1 INTO lv_table_name_descr.
+              IF lines( lt_table_name ) > 1.
+                lv_table_name_descr = lv_table_name_descr && |_and_{ lines( lt_table_name ) - 1 }_more|.
+              ENDIF.
+
+              response->set_binary( lv_xml ).
+              response->set_header_fields( VALUE #(
+                ( name  = `content-type`        value = |application/json| )
+                ( name  = `content-disposition` value = |attachment;filename="{ lv_table_name_descr }_{ sy-sysid }_{ cl_abap_context_info=>get_system_date( ) }_{ cl_abap_context_info=>get_system_time( ) }.xml"| )
+              ) ) ##no_text.
+            ELSE.
+              response->set_text( lv_error_message ).
+              response->set_status( 404 ).
+            ENDIF.
+          ENDIF.
+
+        ELSE.
+          "return static html for web page
+          response->set_text( get_html( ) ).
+
+        ENDIF.
+
+      WHEN CONV string( if_web_http_client=>post ).
+        DATA(lv_check_tables) = to_upper( request->get_form_field( co_url_parameter-check_tables ) ).
+        IF lv_check_tables IS NOT INITIAL.
+          "check visibility of database table
+          NEW zcl_dbtab_helper( )->check_tables_visibility(
+            EXPORTING
+              iv_table_names    = lv_check_tables
+            IMPORTING
+              ev_error_occurred = lv_error_occurred
+              ev_error_message  = lv_error_message
+          ).
+          IF lv_error_occurred = abap_true.
+            response->set_text( lv_error_message ).
+            response->set_status( 404 ).
+          ENDIF.
+        ENDIF.
+
+    ENDCASE.
+
+  ENDMETHOD.
+
+
   METHOD if_oo_adt_classrun~main.
     out->write( get_html( ) ).
   ENDMETHOD.
-
 ENDCLASS.

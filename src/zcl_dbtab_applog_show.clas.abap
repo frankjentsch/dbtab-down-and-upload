@@ -10,7 +10,9 @@ CLASS zcl_dbtab_applog_show DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_dbtab_applog_show IMPLEMENTATION.
+
+CLASS ZCL_DBTAB_APPLOG_SHOW IMPLEMENTATION.
+
 
   METHOD if_oo_adt_classrun~main.
 
@@ -37,5 +39,4 @@ CLASS zcl_dbtab_applog_show IMPLEMENTATION.
     ENDTRY.
 
   ENDMETHOD.
-
 ENDCLASS.

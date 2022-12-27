@@ -98,7 +98,47 @@ CLASS zcl_dbtab_helper DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_dbtab_helper IMPLEMENTATION.
+
+CLASS ZCL_DBTAB_HELPER IMPLEMENTATION.
+
+
+  METHOD check_log_object.
+
+    CLEAR ev_error_occurred.
+    CLEAR ev_error_message.
+
+    TRY.
+        cl_bali_object_handler=>get_instance( )->read_object(
+          EXPORTING
+            iv_object     = c_applog_object-name
+          IMPORTING
+            et_subobjects = DATA(lt_subobject)
+        ).
+
+        READ TABLE lt_subobject TRANSPORTING NO FIELDS
+                   WITH KEY subobject = c_applog_object-subobject-download.
+        IF sy-subrc <> 0.
+          ev_error_occurred = abap_true.
+          ev_error_message  = 'Applog object definition is incomplete - please refer to documentation'(011).
+          RETURN.
+        ENDIF.
+
+        READ TABLE lt_subobject TRANSPORTING NO FIELDS
+                   WITH KEY subobject = c_applog_object-subobject-upload.
+        IF sy-subrc <> 0.
+          ev_error_occurred = abap_true.
+          ev_error_message  = 'Applog object definition is incomplete - please refer to documentation'(011).
+          RETURN.
+        ENDIF.
+
+      CATCH cx_bali_objects.
+        ev_error_occurred = abap_true.
+        ev_error_message  = 'Applog object definition is missing - please refer to documentation'(010).
+        RETURN.
+    ENDTRY.
+
+  ENDMETHOD.
+
 
   METHOD check_tables_visibility.
 
@@ -141,7 +181,7 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
     DATA lt_table_name_dupl_check TYPE SORTED TABLE OF string WITH NON-UNIQUE KEY table_line.
     LOOP AT lt_table_name_string INTO DATA(lv_table_name_string).
       IF ( strlen( lv_table_name_string ) > c_table_name_max_length ) OR
-         ( match( val = lv_table_name_string regex = c_table_name_regex ) = abap_false ).
+         ( match( val = lv_table_name_string regex = c_table_name_regex ) = abap_false ) ##REGEX_POSIX.
         ev_error_occurred = abap_true.
         ev_error_message  = replace( val = 'Table &1 does not exist'(001) sub = '&1' with = lv_table_name_string ).
         RETURN.
@@ -172,6 +212,7 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
     et_table_name = lt_table_name_string.
 
   ENDMETHOD.
+
 
   METHOD check_table_visibility.
 
@@ -204,6 +245,65 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
     ev_error_message  = replace( val = 'Table &1 does not exist'(001) sub = '&1' with = iv_table_name ).
 
   ENDMETHOD.
+
+
+  METHOD deserialize_table_data.
+
+    CLEAR ev_error_occurred.
+    CLEAR ev_error_message.
+
+    TRY.
+        DATA lr_dbtab_data TYPE REF TO data.
+        CREATE DATA lr_dbtab_data TYPE STANDARD TABLE OF (is_download_file_content-table_name).
+
+        FIELD-SYMBOLS <lt_dbtab_data> TYPE STANDARD TABLE.
+        ASSIGN lr_dbtab_data->* TO <lt_dbtab_data>.
+
+        DATA(lv_table_name_checked) = cl_abap_dyn_prg=>check_table_name_str(
+            val      = is_download_file_content-table_name
+            packages = space
+        ).
+
+      CATCH cx_root ##catch_all.
+        ev_error_occurred = abap_true.
+        ev_error_message  = replace( val = 'Table &1 does not exist'(001) sub = '&1' with = is_download_file_content-table_name ).
+        RETURN.
+    ENDTRY.
+
+    TRY.
+        DATA lv_dbtab_xml TYPE xstring.
+
+        "decompress the deserialized xml
+        cl_abap_gzip=>decompress_binary( EXPORTING gzip_in = is_download_file_content-content IMPORTING raw_out = lv_dbtab_xml ).
+
+        "deserialize table data
+        CALL TRANSFORMATION id
+          SOURCE XML lv_dbtab_xml
+          RESULT root = <lt_dbtab_data>.
+
+        "free memory
+        FREE lv_dbtab_xml.
+
+      CATCH cx_root ##catch_all.
+        ev_error_occurred = abap_true.
+        ev_error_message  = 'Error during reading the data from file'(005).
+    ENDTRY.
+
+    TRY.
+        IF iv_overwrite = abap_true.
+          DELETE FROM (lv_table_name_checked).
+        ENDIF.
+        INSERT (lv_table_name_checked) FROM TABLE @<lt_dbtab_data>.
+        COMMIT WORK.
+
+      CATCH cx_root INTO DATA(lx_root) ##catch_all.
+        ev_error_occurred = abap_true.
+        ev_error_message  = replace( val = 'Error during inserting data into table &1'(006) sub = '&1' with = is_download_file_content-table_name ) && `: ` && lx_root->get_text( ).
+        RETURN.
+    ENDTRY.
+
+  ENDMETHOD.
+
 
   METHOD download_file_content.
 
@@ -279,6 +379,79 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
 
   ENDMETHOD.
 
+
+  METHOD if_oo_adt_classrun~main.
+
+    DATA(lo_objects) = xco_cp_abap_repository=>objects->tabl->database_tables->all->in( xco_cp_abap=>repository )->get( ).
+
+    DATA lt_table_name TYPE ty_t_table_name.
+    LOOP AT lo_objects INTO DATA(lo_object).
+      APPEND lo_object->name TO lt_table_name.
+    ENDLOOP.
+
+    SORT lt_table_name BY table_line.
+
+    DATA lv_output TYPE string.
+    LOOP AT lt_table_name INTO DATA(lv_table_name).
+      check_table_visibility(
+        EXPORTING
+          iv_table_name     = lv_table_name
+        IMPORTING
+          ev_error_occurred = DATA(lv_error_occurred)
+      ).
+      IF lv_error_occurred = abap_false.
+        lv_output = lv_output && lv_table_name && ` `.
+      ELSE.
+        DELETE lt_table_name.
+      ENDIF.
+    ENDLOOP.
+
+    out->write( lv_output ).
+    out->write( |{ lines( lt_table_name ) } table(s) found| ) ##no_text.
+
+  ENDMETHOD.
+
+
+  METHOD search_table_name.
+
+    IF ( strlen( iv_search_text ) > c_table_name_max_length ) OR
+       ( match( val = iv_search_text regex = c_table_name_regex ) = abap_false ) ##REGEX_POSIX.
+      RETURN.
+    ENDIF.
+
+    DATA(lo_name_filter) = xco_cp_abap_repository=>object_name->get_filter(
+                             xco_cp_abap_sql=>constraint->contains_pattern( to_upper( iv_search_text ) && '%' )  ).
+    DATA(lo_objects) = xco_cp_abap_repository=>objects->tabl->database_tables->where( VALUE #(
+                         ( lo_name_filter ) ) )->in( xco_cp_abap=>repository )->get( ).
+
+    LOOP AT lo_objects INTO DATA(lo_object).
+      APPEND lo_object->name TO rt_table_name.
+    ENDLOOP.
+
+    SORT rt_table_name BY table_line.
+
+  ENDMETHOD.
+
+
+  METHOD search_table_name_json_output.
+
+    TYPES BEGIN OF ty_s_table_name_json_output.
+    TYPES   table_name TYPE ty_table_name.
+    TYPES END OF ty_s_table_name_json_output.
+
+    DATA(lt_table_name) = search_table_name( iv_search_text ).
+
+    DATA lt_table_name_json_output TYPE STANDARD TABLE OF ty_s_table_name_json_output WITH EMPTY KEY.
+    LOOP AT lt_table_name INTO DATA(lv_table_name).
+      APPEND VALUE #( table_name = lv_table_name ) TO lt_table_name_json_output.
+    ENDLOOP.
+
+    rv_json_output = /ui2/cl_json=>serialize( lt_table_name_json_output ).
+    "rv_json_output = xco_cp_json=>data->from_abap( lt_table_name_json_output )->to_string( ). "alternative option
+
+  ENDMETHOD.
+
+
   METHOD serialize_table_data.
 
     CLEAR es_download_file_content.
@@ -351,43 +524,6 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD search_table_name.
-
-    IF ( strlen( iv_search_text ) > c_table_name_max_length ) OR
-       ( match( val = iv_search_text regex = c_table_name_regex ) = abap_false ).
-      RETURN.
-    ENDIF.
-
-    DATA(lo_name_filter) = xco_cp_abap_repository=>object_name->get_filter(
-                             xco_cp_abap_sql=>constraint->contains_pattern( to_upper( iv_search_text ) && '%' )  ).
-    DATA(lo_objects) = xco_cp_abap_repository=>objects->tabl->database_tables->where( VALUE #(
-                         ( lo_name_filter ) ) )->in( xco_cp_abap=>repository )->get( ).
-
-    LOOP AT lo_objects INTO DATA(lo_object).
-      APPEND lo_object->name TO rt_table_name.
-    ENDLOOP.
-
-    SORT rt_table_name BY table_line.
-
-  ENDMETHOD.
-
-  METHOD search_table_name_json_output.
-
-    TYPES BEGIN OF ty_s_table_name_json_output.
-    TYPES   table_name TYPE ty_table_name.
-    TYPES END OF ty_s_table_name_json_output.
-
-    DATA(lt_table_name) = search_table_name( iv_search_text ).
-
-    DATA lt_table_name_json_output TYPE STANDARD TABLE OF ty_s_table_name_json_output WITH EMPTY KEY.
-    LOOP AT lt_table_name INTO DATA(lv_table_name).
-      APPEND VALUE #( table_name = lv_table_name ) TO lt_table_name_json_output.
-    ENDLOOP.
-
-    rv_json_output = /ui2/cl_json=>serialize( lt_table_name_json_output ).
-    "rv_json_output = xco_cp_json=>data->from_abap( lt_table_name_json_output )->to_string( ). "alternative option
-
-  ENDMETHOD.
 
   METHOD upload_file_content.
 
@@ -455,99 +591,6 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD deserialize_table_data.
-
-    CLEAR ev_error_occurred.
-    CLEAR ev_error_message.
-
-    TRY.
-        DATA lr_dbtab_data TYPE REF TO data.
-        CREATE DATA lr_dbtab_data TYPE STANDARD TABLE OF (is_download_file_content-table_name).
-
-        FIELD-SYMBOLS <lt_dbtab_data> TYPE STANDARD TABLE.
-        ASSIGN lr_dbtab_data->* TO <lt_dbtab_data>.
-
-        DATA(lv_table_name_checked) = cl_abap_dyn_prg=>check_table_name_str(
-            val      = is_download_file_content-table_name
-            packages = space
-        ).
-
-      CATCH cx_root ##catch_all.
-        ev_error_occurred = abap_true.
-        ev_error_message  = replace( val = 'Table &1 does not exist'(001) sub = '&1' with = is_download_file_content-table_name ).
-        RETURN.
-    ENDTRY.
-
-    TRY.
-        DATA lv_dbtab_xml TYPE xstring.
-
-        "decompress the deserialized xml
-        cl_abap_gzip=>decompress_binary( EXPORTING gzip_in = is_download_file_content-content IMPORTING raw_out = lv_dbtab_xml ).
-
-        "deserialize table data
-        CALL TRANSFORMATION id
-          SOURCE XML lv_dbtab_xml
-          RESULT root = <lt_dbtab_data>.
-
-        "free memory
-        FREE lv_dbtab_xml.
-
-      CATCH cx_root ##catch_all.
-        ev_error_occurred = abap_true.
-        ev_error_message  = 'Error during reading the data from file'(005).
-    ENDTRY.
-
-    TRY.
-        IF iv_overwrite = abap_true.
-          DELETE FROM (lv_table_name_checked).
-        ENDIF.
-        INSERT (lv_table_name_checked) FROM TABLE @<lt_dbtab_data>.
-        COMMIT WORK.
-
-      CATCH cx_root INTO DATA(lx_root) ##catch_all.
-        ev_error_occurred = abap_true.
-        ev_error_message  = replace( val = 'Error during inserting data into table &1'(006) sub = '&1' with = is_download_file_content-table_name ) && `: ` && lx_root->get_text( ).
-        RETURN.
-    ENDTRY.
-
-  ENDMETHOD.
-
-  METHOD check_log_object.
-
-    CLEAR ev_error_occurred.
-    CLEAR ev_error_message.
-
-    TRY.
-        cl_bali_object_handler=>get_instance( )->read_object(
-          EXPORTING
-            iv_object     = c_applog_object-name
-          IMPORTING
-            et_subobjects = DATA(lt_subobject)
-        ).
-
-        READ TABLE lt_subobject TRANSPORTING NO FIELDS
-                   WITH KEY subobject = c_applog_object-subobject-download.
-        IF sy-subrc <> 0.
-          ev_error_occurred = abap_true.
-          ev_error_message  = 'Applog object definition is incomplete - please refer to documentation'(011).
-          RETURN.
-        ENDIF.
-
-        READ TABLE lt_subobject TRANSPORTING NO FIELDS
-                   WITH KEY subobject = c_applog_object-subobject-upload.
-        IF sy-subrc <> 0.
-          ev_error_occurred = abap_true.
-          ev_error_message  = 'Applog object definition is incomplete - please refer to documentation'(011).
-          RETURN.
-        ENDIF.
-
-      CATCH cx_bali_objects.
-        ev_error_occurred = abap_true.
-        ev_error_message  = 'Applog object definition is missing - please refer to documentation'(010).
-        RETURN.
-    ENDTRY.
-
-  ENDMETHOD.
 
   METHOD write_log_entries.
 
@@ -606,36 +649,4 @@ CLASS zcl_dbtab_helper IMPLEMENTATION.
     ENDTRY.
 
   ENDMETHOD.
-
-  METHOD if_oo_adt_classrun~main.
-
-    DATA(lo_objects) = xco_cp_abap_repository=>objects->tabl->database_tables->all->in( xco_cp_abap=>repository )->get( ).
-
-    DATA lt_table_name TYPE ty_t_table_name.
-    LOOP AT lo_objects INTO DATA(lo_object).
-      APPEND lo_object->name TO lt_table_name.
-    ENDLOOP.
-
-    SORT lt_table_name BY table_line.
-
-    DATA lv_output TYPE string.
-    LOOP AT lt_table_name INTO DATA(lv_table_name).
-      check_table_visibility(
-        EXPORTING
-          iv_table_name     = lv_table_name
-        IMPORTING
-          ev_error_occurred = DATA(lv_error_occurred)
-      ).
-      IF lv_error_occurred = abap_false.
-        lv_output = lv_output && lv_table_name && ` `.
-      ELSE.
-        DELETE lt_table_name.
-      ENDIF.
-    ENDLOOP.
-
-    out->write( lv_output ).
-    out->write( |{ lines( lt_table_name ) } table(s) found| ) ##no_text.
-
-  ENDMETHOD.
-
 ENDCLASS.
