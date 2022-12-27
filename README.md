@@ -32,15 +32,15 @@ Use the abapGit plug-in to install the **Download and Upload of Table Data** by 
 6. Select the branch <em>refs/heads/main</em> and enter the newly created package `ZDBTAB_DOWN_AND_UPLOAD` as the target package and choose <em>Next</em>.
 7. Create a new transport request that you only use for this utility installation (recommendation) and choose <em>Finish</em> to link the Git repository to your ABAP cloud project. The repository appears in the abapGit Repositories View with status <em>Linked</em>.
 8. Right-click on the new ABAP repository and choose `Pull ...` to start the cloning of the repository contents. Note that this procedure may take a few seconds. 
-9. Once the cloning has finished, the status is set to `Pulled Successfully`. Refresh the `abapGit Repositories` view to see the progress of the import. Then refresh your project tree. 
+9. Once the cloning has finished, the status is set to `Pulled successfully`. Refresh the `abapGit Repositories` view to see the progress of the import. Then refresh your project tree. 
 
-As a result of the installation procedure above, the ABAP system creates an inactive version of all artifacts for the utility. Unfortuntely, further manual steps are required to finally use the utility. Please refer to the next section.
+As a result of the installation procedure above, the ABAP system creates an inactive version of all artifacts for the utility. Further manual steps are required to finally use the utility. Please refer to the next section.
 
 ## Configuration
 
 To activate all development objects from the `ZDBTAB_DOWN_AND_UPLOAD` package: 
-1. Click the mass-activation icon (<em>Activate Inactive ABAP Development Objects</em>) in the toolbar.  
-2. In the dialog that appears, select all development objects in the transport request (that you created for the untility installation) and choose `Activate`. 
+1. Click the mass-activation icon (<em>Activate inactive ABAP development objects</em>) in the toolbar.  
+2. In the dialog that appears, select all development objects in the transport request (that you created for the utility installation) and choose `Activate`. 
 
 To create the required *Application Log* objects:
 1. Open class `ZCL_DBTAB_APPLOG_CREATE_OBJ` which was imported via abapGit. Please read the ABAP doc comments at the beginning of the class carefully. Change the source code of the class and adopt the number of the transport request. Activate the changes.
