@@ -42,20 +42,12 @@ To activate all development objects from the `ZDBTAB_DOWN_AND_UPLOAD` package:
 1. Click the mass-activation icon (<em>Activate inactive ABAP development objects</em>) in the toolbar.  
 2. In the dialog that appears, select all development objects in the transport request (that you created for the utility installation) and choose `Activate`. 
 
-To create the required *Application Log* objects:
-1. Open class `ZCL_DBTAB_APPLOG_CREATE_OBJ` which was imported via abapGit. Please read the ABAP doc comments at the beginning of the class carefully. Change the source code of the class and adopt the number of the transport request. Activate the changes.
-2. Press `F9` to run the class as console application. As a result, one application log object with two sub-objects was created and added to the transport request. Later, the utility will create a log for each download and upload activity including the referred tables. Therefore, the application log object is a prerequistite for the usage of the utility.
-
-To create the required *HTTP Service* objects:
-1. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `http` and select the object type `HTTP Service`. Create the first HTTP Service by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`, Handler Class `ZCL_DBTAB_DOWNLOAD`. Active the created object. The handler class was already imported as one of the five classes via the abapGit import.
-2. Repeat these steps for a second HTTP Service with Name `ZDBTAB_UPLOAD`, Description `Upload Table Data`, Handler Class `ZCL_DBTAB_UPLOAD`. 
-
 To test the utility in the development system:
 1. At this point in time, the utility can be tested. Please open the respective http service in the editor.
 2. Press the `URL` link to open the browser with download or upload feature.
 
 To create the actual objects for the Identity and Access Management (IAM):
-1. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `iam` and select the object type `IAM App`. Create the first IAM App by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`, Application Type `External App`. Navigate to tab `Services` and add `ZDBTAB_DOWNLOAD` of type `HTTP`. Navigate to tab `Authorizations` and add the authorization object `S_APPL_LOG` with following authorization field values: ACTVT `Display`, ALG_OBJECT `ZDBTAB_DOWN_AND_UPLO`, ALG_SUBOBJ `DOWNLOAD`. Activate the IAM App. Press the button `Publish Locally`.
+1. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `iam` and select the object type `IAM App`. Create the first IAM App by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`, Application Type `External App`. Navigate to tab `Services` and add `ZDBTAB_DOWNLOAD` of service type `HTTP Service`. Navigate to tab `Authorizations` and add the authorization object `S_APPL_LOG` with following authorization field values: ACTVT `Display`, ALG_OBJECT `ZDBTAB_DOWN_AND_UPLO`, ALG_SUBOBJ `DOWNLOAD`. Activate the IAM App. Press the button `Publish Locally`.
 2. Repeat these steps for a second IAM App with Name `ZDBTAB_UPLOAD`, Description `Upload Table Data`, Application Type `External App`. Navigate to tab `Services` and add `ZDBTAB_UPLOAD` of type `HTTP`. Navigate to tab `Authorizations` and add the authorization object `S_APPL_LOG` with following authorization field values: ACTVT `Display`, ALG_OBJECT `ZDBTAB_DOWN_AND_UPLO`, ALG_SUBOBJ `UPLOAD`. Activate the IAM App. Press the button `Publish Locally`.
 3. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `business` and select the object type `Business Catalog`. Create the first Business Catalog by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`. Navigate to tab `Apps` and add IAM App `ZDBTAB_DOWNLOAD`. Activate the Business Catalog. Press the button `Publish Locally`.
 4. Repeat these steps for a second Business Catalog with Name `ZDBTAB_UPLOAD`, Description `Upload Table Data`. Navigate to tab `Apps` and add IAM App `ZDBTAB_UPLOAD`. Activate the Business Catalog. Press the button `Publish Locally`.
