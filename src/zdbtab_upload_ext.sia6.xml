@@ -7,9 +7,9 @@
      <NAME>ZDBTAB_UPLOAD_EXT</NAME>
      <TYPE>SIA6</TYPE>
      <DESCRIPTION>Upload Table Data</DESCRIPTION>
-     <RESPONSIBLE>CB9980000143</RESPONSIBLE>
+     <RESPONSIBLE>CB9980000158</RESPONSIBLE>
      <MASTER_LANGUAGE>EN</MASTER_LANGUAGE>
-     <MASTER_SYSTEM>Y11</MASTER_SYSTEM>
+     <MASTER_SYSTEM>Y08</MASTER_SYSTEM>
      <PACKAGE_REF>
       <PACKAGE_NAME>ZDBTAB_DOWN_AND_UPLOAD</PACKAGE_NAME>
      </PACKAGE_REF>
@@ -36,28 +36,18 @@
       <TEXT>Applications log</TEXT>
       <AUTH_ITEM>
        <item>
+        <UUID>clpyKv+tHt6TmFqwAWSPbQ==</UUID>
         <AUTH_OBJECT>S_APPL_LOG</AUTH_OBJECT>
         <AUTH_OBJECT_INSTANCE>0001</AUTH_OBJECT_INSTANCE>
         <TEXT>Applications log</TEXT>
         <STATUS>U</STATUS>
         <VALUES>
          <item>
-          <FIELD>ACTVT</FIELD>
-          <VALUE>Display</VALUE>
-          <VALUES>
-           <item>
-            <LOW_VALUE>03</LOW_VALUE>
-           </item>
-          </VALUES>
-          <TEXT>Activity</TEXT>
-          <STATUS>U</STATUS>
-          <IS_ACTVT>X</IS_ACTVT>
-         </item>
-         <item>
           <FIELD>ALG_OBJECT</FIELD>
           <VALUE>ZDBTAB_DOWN_AND_UPLO</VALUE>
           <VALUES>
            <item>
+            <UUID>clpyKv+tHt6TmFqwAWSvbQ==</UUID>
             <LOW_VALUE>ZDBTAB_DOWN_AND_UPLO</LOW_VALUE>
            </item>
           </VALUES>
@@ -69,17 +59,32 @@
           <VALUE>UPLOAD</VALUE>
           <VALUES>
            <item>
+            <UUID>clpyKv+tHt6TmFqwAWTPbQ==</UUID>
             <LOW_VALUE>UPLOAD</LOW_VALUE>
            </item>
           </VALUES>
           <TEXT>Application Log: Subobject</TEXT>
           <STATUS>U</STATUS>
          </item>
+         <item>
+          <FIELD>ACTVT</FIELD>
+          <VALUE>Display</VALUE>
+          <VALUES>
+           <item>
+            <UUID>clpyKv+tHt6TmFqwAWTvbQ==</UUID>
+            <LOW_VALUE>03</LOW_VALUE>
+           </item>
+          </VALUES>
+          <TEXT>Activity</TEXT>
+          <STATUS>U</STATUS>
+          <IS_ACTVT>X</IS_ACTVT>
+         </item>
         </VALUES>
        </item>
       </AUTH_ITEM>
      </item>
     </AUTH>
+    <PUBLISH_STATUS>p</PUBLISH_STATUS>
    </SIA6>
   </asx:values>
  </asx:abap>
