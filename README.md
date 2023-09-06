@@ -24,7 +24,7 @@ Make sure to fulfill the following requirements:
 
 ## Download
 Use the abapGit plug-in to install the **Download and Upload of Table Data** by executing the following steps:
-1. Optional, but recommended if two different systems are involved: Open the Administrator's Fiori Launchpad and start the app **Maintain Software Components**. Create a new software component `ZDBTAB_DATA` of type *Development*. Press the button *Clone* which creates the software component and the stucture package with the same name `ZDBTAB_DATA` in the respective ABAP system (see [here](https://help.sap.com/docs/BTP/65de2977205c403bbc107264b8eccf4b/67e2f2e1fbcf48a4801bad004133e0a7.html) for additional information).
+1. Optional, but recommended if two different systems are involved: Open the Administrator's Fiori Launchpad and start the app **Maintain Software Components**. Create a new software component `ZDBTAB_DATA` of type *Development*. Press the button *Clone* which creates the software component and the stucture package with the same name `ZDBTAB_DATA` in the respective ABAP system (see [here](https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/how-to-create-software-components) for additional information).
 2. In your ABAP cloud project, create the ABAP package `ZDBTAB_DOWN_AND_UPLOAD` (using the superpackage `ZDBTAB_DATA`) as the target package for the utility to be downloaded (leave the suggested values unchanged when following the steps in the package creation wizard).
 3. To add the <em>abapGit Repositories</em> view to the <em>ABAP</em> perspective, click `Window` > `Show View` > `Other...` from the menu bar and choose `abapGit Repositories`.
 4. In the <em>abapGit Repositories</em> view, click the `+` icon to clone an abapGit repository.
