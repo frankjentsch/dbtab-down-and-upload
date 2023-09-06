@@ -1,5 +1,5 @@
 # Download and Upload of Table Data for SAP BTP ABAP Environment
-This Git repository provides an utility to download and upload table data from one [SAP BTP ABAP Environment](https://community.sap.com/topics/btp-abap-environment)  (aka "Steampunk") system to another system. The code is compliant to [ABAP Cloud](https://community.sap.com/topics/abap) and can also be used in S/4HANA Public Cloud systems.
+This Git repository provides an utility to download and upload table data from one [SAP BTP ABAP Environment](https://community.sap.com/topics/btp-abap-environment)  (aka "Steampunk") system to another system. The code is compliant to [ABAP Cloud](https://community.sap.com/topics/abap) and can also be used in SAP S/4HANA Cloud, public edition.
 
 The utility consists of two http services (URLs), one to **download** data and the other one to **upload** data. A *SAP UI5* web page is provided for both features.
 
