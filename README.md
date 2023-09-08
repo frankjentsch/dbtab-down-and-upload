@@ -31,8 +31,8 @@ Use the abapGit plug-in to install the **Download and Upload of Table Data** by 
 5. Enter the following URL of this repository: `https://github.com/frankjentsch/dbtab-down-and-upload.git` and choose <em>Next</em>.
 6. Select the branch <em>refs/heads/main</em> and enter the newly created package `ZDBTAB_DOWN_AND_UPLOAD` as the target package and choose <em>Next</em>.
 7. Create a new transport request that you only use for this utility installation (recommendation) and choose <em>Finish</em> to link the Git repository to your ABAP cloud project. The repository appears in the abapGit Repositories View with status <em>Linked</em>.
-8. Right-click on the new ABAP repository and choose `Pull ...` to start the cloning of the repository contents. Note that this procedure may take a few seconds. 
-9. Once the cloning has finished, the status is set to `Pulled successfully`. Refresh the `abapGit Repositories` view to see the progress of the import. Then refresh your project tree. 
+8. Right-click on the new ABAP repository and choose `Pull ...` to start the cloning of the repository content. Note that this procedure may take a few seconds. 
+9. The first pull leads to import errors for SIA6 and SIA7 objects due to the import sequence. Please repeat the pull once again. If the second pull has finished, the status is set to `Pulled successfully`. Refresh the `abapGit Repositories` view to see the progress of the import. Then refresh your project tree. 
 
 As a result of the installation procedure above, the ABAP system creates an inactive version of all artifacts for the utility. Further manual steps are required to finally use the utility. Please refer to the next section.
 
@@ -42,18 +42,16 @@ To activate all development objects from the `ZDBTAB_DOWN_AND_UPLOAD` package:
 1. Click the mass-activation icon (<em>Activate inactive ABAP development objects</em>) in the toolbar.  
 2. In the dialog that appears, select all development objects in the transport request (that you created for the utility installation) and choose `Activate`. 
 
+To setup the required authorizations for testing in the development system: 
+1. Please open the http service `ZDBTAB_DOWNLOAD` in the editor and press the button `Publish Locally`.  
+2. Please open the http service `ZDBTAB_UPLOAD` in the editor and press the button `Publish Locally`.  
+
 To test the utility in the development system:
-1. At this point in time, the utility can be tested. Please open the respective http service in the editor.
+1. At this point in time, the utility can be tested. Please open the respective http service `ZDBTAB_DOWNLOAD` / `ZDBTAB_UPLOAD` in the editor.
 2. Press the `URL` link to open the browser with download or upload feature.
 
-To create the actual objects for the Identity and Access Management (IAM):
-1. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `iam` and select the object type `IAM App`. Create the first IAM App by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`, Application Type `External App`. Navigate to tab `Services` and add `ZDBTAB_DOWNLOAD` of service type `HTTP Service`. Navigate to tab `Authorizations` and add the authorization object `S_APPL_LOG` with following authorization field values: ACTVT `Display`, ALG_OBJECT `ZDBTAB_DOWN_AND_UPLO`, ALG_SUBOBJ `DOWNLOAD`. Activate the IAM App. Press the button `Publish Locally`.
-2. Repeat these steps for a second IAM App with Name `ZDBTAB_UPLOAD`, Description `Upload Table Data`, Application Type `External App`. Navigate to tab `Services` and add `ZDBTAB_UPLOAD` of type `HTTP`. Navigate to tab `Authorizations` and add the authorization object `S_APPL_LOG` with following authorization field values: ACTVT `Display`, ALG_OBJECT `ZDBTAB_DOWN_AND_UPLO`, ALG_SUBOBJ `UPLOAD`. Activate the IAM App. Press the button `Publish Locally`.
-3. Right-click on the package `ZDBTAB_DOWN_AND_UPLOAD` in the project explorer. Click `New` > `Other ABAP Repository Object`, start typing `business` and select the object type `Business Catalog`. Create the first Business Catalog by entering Name `ZDBTAB_DOWNLOAD`, Description `Download Table Data`. Navigate to tab `Apps` and add IAM App `ZDBTAB_DOWNLOAD`. Activate the Business Catalog. Press the button `Publish Locally`.
-4. Repeat these steps for a second Business Catalog with Name `ZDBTAB_UPLOAD`, Description `Upload Table Data`. Navigate to tab `Apps` and add IAM App `ZDBTAB_UPLOAD`. Activate the Business Catalog. Press the button `Publish Locally`.
-
 To transport the finally completed utility:
-1. Release the task and transport via ADT view `Transport Organizer`. As a result of this release, the developed object of that software component are written into a hidden Git repository.
+1. Release the task and transport via ADT view `Transport Organizer`. As a result of this release, the developed objects of that software component are written into a hidden Git repository.
 2. Import the utility in a subsequent system: Open the Administrator's Fiori Launchpad of the subsequent system and start the app **Maintain Software Components**. Press the button *Clone* which imports all the released objects into the subsequent system.
 
 To setup the authorization in a subsequent system:
