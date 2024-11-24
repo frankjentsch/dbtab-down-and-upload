@@ -52,7 +52,7 @@ To test the utility in the development system:
 
 To transport the finally completed utility:
 1. Release the task and transport via ADT view `Transport Organizer`. As a result of this release, the developed objects of that software component are written into a hidden Git repository.
-2. Import the utility in a subsequent system: Open the Administrator's Fiori Launchpad of the subsequent system and start the app **Maintain Software Components**. Press the button *Clone* which imports all the released objects into the subsequent system.
+2. Import the utility in a subsequent system: Open the Administrator's Fiori Launchpad of the subsequent system and start the app **Maintain Software Components**. Press the button *Clone* which imports all the developed objects into the subsequent system.
 
 To setup the authorization in a subsequent system:
 1. Open the Administrator's Fiori Launchpad of the subsequent system and start the app **Maintain Business Roles**. Press `New` and enter Business Role ID `ZDBTAB_DOWNLOAD`, Business Role Description `Download Table Data`. Navigate to section `Assigned Business Catalogs` and add `ZDBTAB_DOWNLOAD`. Navigate to section `Assigned Business Users` and add all users to be able to **download** data.
