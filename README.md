@@ -60,7 +60,7 @@ To setup the authorization in a subsequent system:
 
 To show the created logs:
 1. Open class `ZCL_DBTAB_APPLOG_SHOW`.
-2. Press `F9` to run the class as console application. As a result, all logs about the download and upload activities are shown as console output of the last 24 hours. In order to show this data, the current user needs to have the respective S_APPL_LOG authorizations as explained above in the section to create the IAM Apps.
+2. Press `F9` to run the class as console application. As a result, all logs about the download and upload activities are shown as console output of the last 24 hours. In order to show this data, the current user needs to have the respective S_APPL_LOG authorizations. This authorization is alreday maintained in the two respective IAM App objects ZDBTAB_DOWNLOAD_EXT and ZDBTAB_UPLOAD_EXT. To get this authorization, your user need to be assigned to business roles containing the respective business catalog. The approach is exlained aabove in the section _To setup the authorization in a subsequent system_.
 
 ## How to obtain support
 This project is provided "as-is": there is no guarantee that raised issues will be answered or addressed in future releases.
